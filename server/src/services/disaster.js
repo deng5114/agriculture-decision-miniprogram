@@ -1,95 +1,30 @@
 const { pool } = require('../db');
-
-function levelByValue(value, warning, danger) {
-  if (value >= danger) return 'high';
-  if (value >= warning) return 'medium';
-  return null;
-}
-
-async function getDisasterAlerts({ plotId, userId, cropName, rainfall = 0, dryDays = 0, minTemperature = null }) {
-  const [plots] = await pool.execute(
-    'SELECT id, soil_type, region FROM plots WHERE id = ? AND user_id = ?',
-    [plotId, userId]
-  );
-  if (!plots.length) {
-    const error = new Error('地块不存在或无权访问');
-    error.statusCode = 404;
-    throw error;
-  }
-
-  const plot = plots[0];
-  const [crops] = await pool.execute('SELECT * FROM crops WHERE name = ? AND enabled = TRUE', [cropName]);
-  if (!crops.length) {
-    const error = new Error('作物不存在，请先选择有效作物');
-    error.statusCode = 400;
-    throw error;
-  }
-
-  const crop = crops[0];
-  const [rules] = await pool.execute(
-    `SELECT disaster_type, trigger_condition, impact, measures, source
-     FROM disaster_rules WHERE enabled = TRUE`
-  );
-  const ruleMap = Object.fromEntries(rules.map((rule) => [rule.disaster_type, rule]));
+const { getWeather, fault } = require('./weather');
+function evaluate(weather, crop) {
   const alerts = [];
-
-  const rainLevel = levelByValue(Number(rainfall), 50, 80);
-  if (rainLevel) {
-    const rule = ruleMap.rainstorm;
-    alerts.push({
-      type: 'rainstorm',
-      level: rainLevel,
-      title: rainLevel === 'high' ? '暴雨高风险' : '暴雨风险',
-      trigger: `预计降水量 ${Number(rainfall)} 毫米，达到预警阈值`,
-      impact: rule ? rule.impact : '可能造成积水和作物倒伏',
-      measures: rule ? rule.measures : '及时排水、加固设施、避免积水',
-      source: rule ? rule.source : '课程演示规则'
-    });
+  function add(day, type, level, title, trigger, impact, measures) {
+    alerts.push({ id: `${day.date}-${type}`, date: day.date, type, level, title, trigger, impact, measures, source: 'Open-Meteo 天气数据 + 项目规则 weather-v2' });
   }
-
-  const droughtLevel = Number(dryDays) >= 7 && Number(rainfall) < 10 ? 'high'
-    : Number(dryDays) >= 3 && Number(rainfall) < 20 ? 'medium' : null;
-  if (droughtLevel) {
-    const rule = ruleMap.drought;
-    alerts.push({
-      type: 'drought',
-      level: droughtLevel,
-      title: droughtLevel === 'high' ? '干旱高风险' : '干旱风险',
-      trigger: `连续 ${Number(dryDays)} 天有效降水不足，当前温度条件可能加剧缺水`,
-      impact: rule ? rule.impact : '作物缺水，生长速度下降',
-      measures: rule ? rule.measures : '分时灌溉、覆盖保墒、节水提示',
-      source: rule ? rule.source : '课程演示规则'
-    });
+  for (const day of weather.forecast) {
+    if (day.rainfall >= 50) add(day, 'rainstorm', day.rainfall >= 80 ? 'high' : 'medium', '强降雨风险', `当日预计降雨 ${day.rainfall} 毫米（北京时间日累计）`, '可能出现积水和倒伏', '检查排水沟、加固设施，关注当地气象预警');
+    if (day.minTemperature <= 0) {
+      add(day, 'frost', day.minTemperature <= -3 ? 'high' : 'medium', '霜冻风险提示', `预计日最低气温 ${day.minTemperature}℃，达到项目低温阈值`, `${crop.name}可能受到低温影响，实际风险还与品种和生育期有关`, '检查保温覆盖和幼苗，咨询农技人员');
+    } else if (crop.min_temperature != null && day.minTemperature < Number(crop.min_temperature)) {
+      add(day, 'cold', 'medium', '作物低温适配提醒', `预计最低 ${day.minTemperature}℃，低于作物库生长温度下限 ${crop.min_temperature}℃`, '该阈值是生长适配参考，不是霜冻耐受温度', '关注作物生育期与夜间温度，必要时咨询农技人员');
+    }
   }
-
-  const cropMinTemperature = Number(crop.min_temperature);
-  if (minTemperature !== null && minTemperature !== '' && Number(minTemperature) < cropMinTemperature) {
-    const difference = cropMinTemperature - Number(minTemperature);
-    const frostLevel = difference >= 8 ? 'high' : 'medium';
-    const rule = ruleMap.frost;
-    alerts.push({
-      type: 'frost',
-      level: frostLevel,
-      title: frostLevel === 'high' ? '霜冻高风险' : '霜冻风险',
-      trigger: `最低温度 ${Number(minTemperature)}℃，低于${crop.name}最低耐受温度 ${cropMinTemperature}℃`,
-      impact: rule ? rule.impact : '幼苗冻伤，生长受阻',
-      measures: rule ? rule.measures : '覆盖保温、检查幼苗、联系农技人员',
-      source: rule ? rule.source : '课程演示规则'
-    });
-  }
-
-  return {
-    plotId: plot.id,
-    region: plot.region,
-    cropName: crop.name,
-    weather: {
-      rainfall: Number(rainfall),
-      dryDays: Number(dryDays),
-      minTemperature: minTemperature === null || minTemperature === '' ? null : Number(minTemperature)
-    },
-    alerts,
-    status: alerts.length ? 'warning' : 'normal'
-  };
+  const today = weather.forecast[0];
+  if (weather.dryDays >= 3 && today.maxTemperature >= 30 && today.precipitation < 10) add(today, 'drought', weather.dryDays >= 7 ? 'high' : 'medium', '少雨高温缺水风险', `截至昨日连续${weather.dryDaysCapped ? '至少' : ''}${weather.dryDays}天日降水不足1毫米，今日最高 ${today.maxTemperature}℃`, '可能增加缺水风险；未结合土壤湿度，不作为干旱实况判定', '检查墒情，结合实际缺水程度安排节水灌溉');
+  return alerts;
 }
-
-module.exports = { getDisasterAlerts };
+async function getDisasterAlerts({ plotId, userId, cropName }) {
+  const [plots] = await pool.execute('SELECT id, region, latitude, longitude FROM plots WHERE id = ? AND user_id = ?', [plotId, userId]);
+  if (!plots.length) throw fault(404, '地块不存在或无权访问');
+  const [crops] = await pool.execute('SELECT name, min_temperature FROM crops WHERE name = ? AND enabled = TRUE', [cropName]);
+  if (!crops.length) throw fault(400, '请选择作物库中有效的作物');
+  const plot = plots[0];
+  const weather = await getWeather(plot.latitude, plot.longitude);
+  const alerts = evaluate(weather, crops[0]);
+  return { plotId: plot.id, region: plot.region, cropName, weather, alerts, status: alerts.length ? 'warning' : 'normal', ruleVersion: 'weather-v2' };
+}
+module.exports = { getDisasterAlerts, evaluate };

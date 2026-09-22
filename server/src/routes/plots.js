@@ -3,6 +3,20 @@ const { pool } = require('../db');
 const { requireLogin, requireRole } = require('../middleware/auth');
 
 const router = express.Router();
+const { coordinates } = require('../services/weather');
+
+router.put('/:id/location', requireLogin, requireRole('farmer'), async (req, res, next) => {
+  try {
+    const location = coordinates(req.body?.latitude, req.body?.longitude);
+    const [owned] = await pool.execute('SELECT id FROM plots WHERE id = ? AND user_id = ?', [req.params.id, req.user.id]);
+    if (!owned.length) return res.status(404).json({ code: 404, message: '地块不存在或无权访问', data: null });
+    await pool.execute('UPDATE plots SET latitude = ?, longitude = ? WHERE id = ? AND user_id = ?', [location.latitude, location.longitude, req.params.id, req.user.id]);
+    res.json({ code: 0, message: '地块位置已保存', data: location });
+  } catch (error) {
+    if (error.statusCode) return res.status(error.statusCode).json({ code: error.statusCode, message: error.message, data: null });
+    next(error);
+  }
+});
 
 router.post('/', requireLogin, requireRole('farmer'), async (req, res, next) => {
   try {

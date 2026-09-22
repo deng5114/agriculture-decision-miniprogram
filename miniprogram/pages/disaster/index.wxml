@@ -1,23 +1,34 @@
 <view class="page">
   <view class="card">
-    <text class="title">灾害预警</text>
+    <text class="title">天气与农业风险</text>
+    <view class="muted">按地块位置查询真实模型天气。系统风险提示不等于官方气象预警。</view>
+    <text class="field-label">搜索地块附近城市或乡镇</text>
+    <input class="input" disabled="{{busy}}" data-field="locationName" value="{{locationName}}" bindinput="input" placeholder="输入城市名或拼音" />
+    <button class="button-secondary" disabled="{{busy || !ready}}" bindtap="searchLocation">搜索地点</button>
+    <view wx:for="{{locations}}" wx:key="id"><button disabled="{{busy}}" data-index="{{index}}" bindtap="chooseLocation">{{item.label}}</button></view>
+    <view class="muted">{{locationMessage}}</view>
+    <text class="field-label">地块纬度（WGS84）</text>
+    <input class="input" disabled="{{busy}}" data-field="latitude" value="{{latitude}}" bindinput="input" placeholder="-90 至 90，可填写实际地块坐标" />
+    <text class="field-label">地块经度（WGS84）</text>
+    <input class="input" disabled="{{busy}}" data-field="longitude" value="{{longitude}}" bindinput="input" placeholder="-180 至 180" />
+    <view class="muted">城市坐标仅代表附近区域；请核对位置。查询时会保存位置，并将经纬度发送给 Open-Meteo 获取天气。</view>
     <text class="field-label">作物名称</text>
-    <input class="input" data-field="cropName" value="{{cropName}}" bindinput="input" />
-    <text class="field-label">预计降水量（毫米）</text>
-    <input class="input" type="digit" data-field="rainfall" value="{{rainfall}}" bindinput="input" />
-    <text class="field-label">连续无有效降水天数</text>
-    <input class="input" type="number" data-field="dryDays" value="{{dryDays}}" bindinput="input" />
-    <text class="field-label">最低温度（℃）</text>
-    <input class="input" type="digit" data-field="minTemperature" value="{{minTemperature}}" bindinput="input" />
-    <button class="button-primary" bindtap="submit">检测预警</button>
+    <input class="input" disabled="{{busy}}" data-field="cropName" value="{{cropName}}" bindinput="input" />
+    <button class="button-primary" loading="{{busy}}" disabled="{{busy || !ready}}" bindtap="submit">保存位置并查询真实天气</button>
   </view>
-
-  <view wx:if="{{status === 'normal'}}" class="card normal-card">
-    <text>当前未检测到灾害风险</text>
+  <view wx:if="{{error}}" class="card">{{error}}<view>当前没有可用评估结果，不代表没有风险。</view></view>
+  <view wx:if="{{weather}}" class="card">
+    <text class="title">未来三天（含今天）</text>
+    <view wx:for="{{weather.forecast}}" wx:key="date" class="alert-line">{{item.date}}：{{item.minTemperature}}～{{item.maxTemperature}}℃，降雨 {{item.rainfall}} 毫米</view>
+    <view class="alert-line">截至昨日连续少雨：{{weather.dryDaysCapped ? '至少' : ''}}{{weather.dryDays}} 天</view>
+    <view class="alert-source">数据来源：Open-Meteo · open-meteo.com（CC BY 4.0）</view>
+    <view class="alert-source">获取时间：{{fetchedText}}（北京时间）{{weather.cached ? ' · 10分钟内缓存' : ''}}</view>
+    <view class="alert-source">{{weather.historyNote}}</view>
   </view>
-
-  <view wx:for="{{alerts}}" wx:key="type" class="card alert-card">
-    <text class="alert-title">{{item.title}}</text>
+  <view wx:if="{{status === 'normal'}}" class="card normal-card">未来三天未触发当前规则，请持续关注当地天气变化。</view>
+  <view wx:for="{{alerts}}" wx:key="id" class="card alert-card">
+    <text class="alert-title">{{item.date}} · {{item.title}}</text>
+    <view>项目风险等级：{{item.levelText}}</view>
     <text class="alert-line">触发原因：{{item.trigger}}</text>
     <text class="alert-line">可能影响：{{item.impact}}</text>
     <text class="alert-line">处理措施：{{item.measures}}</text>

@@ -32,7 +32,9 @@ POST http://localhost:3000/api/auth/login
 POST http://localhost:3000/api/plots
 GET  http://localhost:3000/api/plant-records
 POST http://localhost:3000/api/recommendations
-GET  http://localhost:3000/api/disaster-alerts?plotId=1&cropName=番茄&rainfall=85&dryDays=0&minTemperature=18
+GET  http://localhost:3000/api/disaster-alerts?plotId=1&cropName=番茄
+GET  http://localhost:3000/api/disaster-alerts/locations?name=Wuhan
+PUT  http://localhost:3000/api/plots/:id/location
 GET  http://localhost:3000/api/reviews/pending
 POST http://localhost:3000/api/reviews/:id/approve
 POST http://localhost:3000/api/reviews/:id/reject
@@ -41,3 +43,7 @@ GET  http://localhost:3000/api/statistics/region
 ```
 
 当前登录接口是课程演示用登录，返回的 `demoHeaders` 可用于后续接口联调。正式接入微信时，再替换为微信登录校验流程。
+
+天气接口已接入 Open-Meteo，无需填写 API Key。地块必须先保存 WGS84 经纬度；位置接口请求体为 `{ "latitude": 30.59, "longitude": 114.30 }`（仅为示例，实际使用应填写地块位置）。客户端传入的 rainfall、dryDays、minTemperature 不再用于预警。服务器须能访问 api.open-meteo.com 与 geocoding-api.open-meteo.com。
+
+使用说明、规则口径和验证结果见 `../docs/真实天气接入说明.md`。
