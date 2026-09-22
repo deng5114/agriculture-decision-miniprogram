@@ -1,0 +1,28 @@
+.result-head {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.crop-name {
+  font-size: 34rpx;
+  font-weight: 700;
+}
+
+.score {
+  color: #2f855a;
+  font-size: 36rpx;
+  font-weight: 700;
+}
+
+.result-line,
+.reason,
+.risk {
+  display: block;
+  margin-top: 14rpx;
+  line-height: 1.6;
+}
+
+.risk {
+  color: #c05621;
+}

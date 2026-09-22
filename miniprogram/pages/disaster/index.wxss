@@ -1,0 +1,28 @@
+.normal-card {
+  color: #276749;
+  background: #f0fff4;
+}
+
+.alert-card {
+  border-left: 8rpx solid #dd6b20;
+}
+
+.alert-title {
+  display: block;
+  color: #c05621;
+  font-size: 34rpx;
+  font-weight: 700;
+  margin-bottom: 14rpx;
+}
+
+.alert-line,
+.alert-source {
+  display: block;
+  line-height: 1.7;
+  margin-top: 8rpx;
+}
+
+.alert-source {
+  color: #718096;
+  font-size: 24rpx;
+}

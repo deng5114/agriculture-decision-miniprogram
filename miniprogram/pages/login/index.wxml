@@ -1,0 +1,16 @@
+<view class="page login-page">
+  <view class="card hero-card">
+    <text class="title">农业作物智能决策</text>
+    <text class="muted">用规则和数据辅助种植决策</text>
+  </view>
+
+  <view class="card">
+    <text class="field-label">选择演示角色</text>
+    <view class="role-list">
+      <view wx:for="{{roles}}" wx:key="value" class="role-item {{role === item.value ? 'role-active' : ''}}" data-role="{{item.value}}" bindtap="chooseRole">
+        {{item.label}}
+      </view>
+    </view>
+    <button class="button-primary" bindtap="login">进入小程序</button>
+  </view>
+</view>

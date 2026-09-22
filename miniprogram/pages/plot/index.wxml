@@ -1,0 +1,14 @@
+<view class="page">
+  <view class="card">
+    <text class="title">新增地块</text>
+    <text class="field-label">地块名称</text>
+    <input class="input" data-field="name" placeholder="例如：一号示范地块" bindinput="input" />
+    <text class="field-label">面积（亩）</text>
+    <input class="input" type="digit" data-field="areaMu" placeholder="请输入面积" bindinput="input" />
+    <text class="field-label">土壤类型</text>
+    <input class="input" data-field="soilType" value="{{soilType}}" bindinput="input" />
+    <text class="field-label">所在区域</text>
+    <input class="input" data-field="region" value="{{region}}" bindinput="input" />
+    <button class="button-primary" bindtap="submit">保存地块</button>
+  </view>
+</view>

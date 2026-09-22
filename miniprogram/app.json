@@ -1,0 +1,17 @@
+{
+  "pages": [
+    "pages/login/index",
+    "pages/farmer/index",
+    "pages/plot/index",
+    "pages/recommendation/index",
+    "pages/disaster/index"
+  ],
+  "window": {
+    "navigationBarTitleText": "农业作物智能决策",
+    "navigationBarBackgroundColor": "#2f855a",
+    "navigationBarTextStyle": "white",
+    "backgroundColor": "#f5f7f5"
+  },
+  "style": "v2",
+  "sitemapLocation": "sitemap.json"
+}

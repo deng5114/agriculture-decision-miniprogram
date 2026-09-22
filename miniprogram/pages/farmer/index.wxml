@@ -1,0 +1,20 @@
+<view class="page">
+  <view class="card welcome-card">
+    <text class="title">你好，{{user.nickname || '演示农户'}}</text>
+    <text class="muted">{{user.region || '示范区'}} · 我的地块</text>
+  </view>
+
+  <button class="button-primary" bindtap="addPlot">新增地块</button>
+
+  <view wx:if="{{plots.length === 0}}" class="card empty-card">
+    <text class="muted">还没有地块，请先新增一块地。</text>
+  </view>
+
+  <view wx:for="{{plots}}" wx:key="id" class="card">
+    <text class="plot-name">{{item.name}}</text>
+    <text class="plot-info">面积：{{item.area_mu}} 亩</text>
+    <text class="plot-info">土壤：{{item.soil_type}} · 区域：{{item.region}}</text>
+    <button class="button-secondary" data-id="{{item.id}}" bindtap="recommend">作物推荐</button>
+    <button class="button-secondary" data-id="{{item.id}}" bindtap="disaster">灾害预警</button>
+  </view>
+</view>

@@ -1,0 +1,26 @@
+<view class="page">
+  <view class="card">
+    <text class="title">灾害预警</text>
+    <text class="field-label">作物名称</text>
+    <input class="input" data-field="cropName" value="{{cropName}}" bindinput="input" />
+    <text class="field-label">预计降水量（毫米）</text>
+    <input class="input" type="digit" data-field="rainfall" value="{{rainfall}}" bindinput="input" />
+    <text class="field-label">连续无有效降水天数</text>
+    <input class="input" type="number" data-field="dryDays" value="{{dryDays}}" bindinput="input" />
+    <text class="field-label">最低温度（℃）</text>
+    <input class="input" type="digit" data-field="minTemperature" value="{{minTemperature}}" bindinput="input" />
+    <button class="button-primary" bindtap="submit">检测预警</button>
+  </view>
+
+  <view wx:if="{{status === 'normal'}}" class="card normal-card">
+    <text>当前未检测到灾害风险</text>
+  </view>
+
+  <view wx:for="{{alerts}}" wx:key="type" class="card alert-card">
+    <text class="alert-title">{{item.title}}</text>
+    <text class="alert-line">触发原因：{{item.trigger}}</text>
+    <text class="alert-line">可能影响：{{item.impact}}</text>
+    <text class="alert-line">处理措施：{{item.measures}}</text>
+    <text class="alert-source">来源：{{item.source}}</text>
+  </view>
+</view>

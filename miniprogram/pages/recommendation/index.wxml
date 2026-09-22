@@ -1,0 +1,21 @@
+<view class="page">
+  <view class="card">
+    <text class="title">作物智能推荐</text>
+    <text class="field-label">当前温度（℃）</text>
+    <input class="input" type="digit" data-field="temperature" value="{{temperature}}" bindinput="input" />
+    <text class="field-label">预算（元）</text>
+    <input class="input" type="digit" data-field="budget" value="{{budget}}" bindinput="input" />
+    <button class="button-primary" bindtap="submit">开始推荐</button>
+  </view>
+
+  <view wx:for="{{results}}" wx:key="cropName" class="card result-card">
+    <view class="result-head">
+      <text class="crop-name">{{index + 1}}. {{item.cropName}}</text>
+      <text class="score">{{item.score}}分</text>
+    </view>
+    <text class="result-line">土壤适配：{{item.dimensions.soil}} · 气候适配：{{item.dimensions.climate}}</text>
+    <text class="result-line">市场稳定：{{item.dimensions.market}} · 成本适配：{{item.dimensions.cost}}</text>
+    <text class="reason">推荐理由：{{item.reasons.join('；')}}</text>
+    <text wx:if="{{item.risks.length}}" class="risk">风险提示：{{item.risks.join('；')}}</text>
+  </view>
+</view>
