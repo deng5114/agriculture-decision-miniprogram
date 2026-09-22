@@ -6,6 +6,7 @@ const healthRoutes = require('./routes/health');
 const plotRoutes = require('./routes/plots');
 const recordRoutes = require('./routes/records');
 const recommendationRoutes = require('./routes/recommendations');
+const disasterRoutes = require('./routes/disasters');
 
 const app = express();
 
@@ -25,6 +26,7 @@ app.use('/api/health', healthRoutes);
 app.use('/api/plots', plotRoutes);
 app.use('/api/plant-records', recordRoutes);
 app.use('/api/recommendations', recommendationRoutes);
+app.use('/api/disaster-alerts', disasterRoutes);
 
 app.use((req, res) => {
   res.status(404).json({ code: 404, message: '接口不存在', data: null });
