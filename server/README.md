@@ -36,6 +36,8 @@ GET  http://localhost:3000/api/disaster-alerts?plotId=1&cropName=番茄&rainfall
 GET  http://localhost:3000/api/reviews/pending
 POST http://localhost:3000/api/reviews/:id/approve
 POST http://localhost:3000/api/reviews/:id/reject
+GET  http://localhost:3000/api/market-data?cropName=番茄&region=示范区&startYear=2022&endYear=2024
+GET  http://localhost:3000/api/statistics/region
 ```
 
 当前登录接口是课程演示用登录，返回的 `demoHeaders` 可用于后续接口联调。正式接入微信时，再替换为微信登录校验流程。
