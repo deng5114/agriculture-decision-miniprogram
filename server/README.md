@@ -33,6 +33,9 @@ POST http://localhost:3000/api/plots
 GET  http://localhost:3000/api/plant-records
 POST http://localhost:3000/api/recommendations
 GET  http://localhost:3000/api/disaster-alerts?plotId=1&cropName=番茄&rainfall=85&dryDays=0&minTemperature=18
+GET  http://localhost:3000/api/reviews/pending
+POST http://localhost:3000/api/reviews/:id/approve
+POST http://localhost:3000/api/reviews/:id/reject
 ```
 
 当前登录接口是课程演示用登录，返回的 `demoHeaders` 可用于后续接口联调。正式接入微信时，再替换为微信登录校验流程。
