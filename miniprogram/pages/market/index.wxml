@@ -10,25 +10,90 @@
       <text class="year-separator">至</text>
       <input class="input year-input" type="number" data-field="endYear" value="{{endYear}}" bindinput="input" />
     </view>
-    <button class="button-primary" bindtap="loadData">查询行情</button>
+    <button class="button-primary" loading="{{loading}}" disabled="{{loading}}" bindtap="loadData">{{loading ? '查询中' : '查询行情'}}</button>
   </view>
 
-  <view class="card">
-    <text class="muted">{{source}}</text>
+  <view wx:if="{{source}}" class="card source-card">
+    <text class="source-tag">{{source}}</text>
     <text class="muted note">{{note}}</text>
   </view>
 
-  <view wx:if="{{rows.length === 0}}" class="card">
-    <text class="muted">暂无数据</text>
+  <view wx:if="{{rows.length > 0}}" class="card chart-card">
+    <view class="section-head">
+      <view>
+        <text class="section-title">{{chartTitle}}</text>
+        <text class="chart-unit">单位：{{chartUnit}}</text>
+      </view>
+      <view class="metric-tabs">
+        <text class="metric-tab {{metric === 'price' ? 'active' : ''}}" data-metric="price" bindtap="selectMetric">价格</text>
+        <text class="metric-tab {{metric === 'output' ? 'active' : ''}}" data-metric="output" bindtap="selectMetric">产量</text>
+        <text class="metric-tab {{metric === 'area' ? 'active' : ''}}" data-metric="area" bindtap="selectMetric">面积</text>
+      </view>
+    </view>
+    <canvas id="marketTrend" canvas-id="marketTrend" class="trend-canvas"></canvas>
   </view>
 
-  <view wx:for="{{rows}}" wx:key="id" class="card market-card">
+  <view wx:if="{{analysis}}" class="card analysis-card">
+    <view class="section-head">
+      <text class="section-title">年度变化分析</text>
+      <text class="period">{{analysis.period}} · {{analysis.yearCount}} 个年度</text>
+    </view>
+    <view class="analysis-grid">
+      <view class="analysis-item">
+        <text class="analysis-label">价格趋势</text>
+        <text class="analysis-value {{analysis.trendClass}}">{{analysis.trendText}}</text>
+      </view>
+      <view class="analysis-item">
+        <text class="analysis-label">首末年变化</text>
+        <text class="analysis-value">{{analysis.overallChangeText}}</text>
+      </view>
+      <view class="analysis-item">
+        <text class="analysis-label">年度均价</text>
+        <text class="analysis-value">{{analysis.averageText}} 元/公斤</text>
+      </view>
+      <view class="analysis-item">
+        <text class="analysis-label">价格波动</text>
+        <text class="analysis-value">{{analysis.volatilityText}}</text>
+      </view>
+      <view class="analysis-item">
+        <text class="analysis-label">产量首末年变化</text>
+        <text class="analysis-value">{{analysis.outputChangeText}}</text>
+      </view>
+      <view class="analysis-item">
+        <text class="analysis-label">面积首末年变化</text>
+        <text class="analysis-value">{{analysis.areaChangeText}}</text>
+      </view>
+    </view>
+    <text class="range-line">价格区间：{{analysis.rangeText}} 元/公斤</text>
+    <text class="methodology">{{analysis.methodology}}</text>
+  </view>
+
+  <view wx:if="{{queried && !loading && rows.length === 0}}" class="card empty-card">
+    <text class="empty-icon">⌁</text>
+    <text class="muted">当前筛选条件下暂无行情数据</text>
+  </view>
+
+  <view wx:for="{{rows}}" wx:key="data_year" class="card market-card">
     <view class="market-head">
       <text class="crop-name">{{item.data_year}} 年</text>
-      <text class="price">￥{{item.average_price}}</text>
+      <text class="price">￥{{item.priceText}}/公斤</text>
     </view>
-    <text class="market-line">产量：{{item.output_ton}} 吨</text>
-    <text class="market-line">种植面积：{{item.planting_area_mu}} 亩</text>
+    <view class="change-row">
+      <view class="change-item">
+        <text class="change-label">价格同比</text>
+        <text class="{{item.priceChangeClass}}">{{item.priceChangeText}}</text>
+      </view>
+      <view class="change-item">
+        <text class="change-label">产量同比</text>
+        <text class="{{item.outputChangeClass}}">{{item.outputChangeText}}</text>
+      </view>
+      <view class="change-item">
+        <text class="change-label">面积同比</text>
+        <text class="{{item.areaChangeClass}}">{{item.areaChangeText}}</text>
+      </view>
+    </view>
+    <text class="market-line">产量：{{item.outputText}} 吨</text>
+    <text class="market-line">种植面积：{{item.areaText}} 亩</text>
     <text class="market-source">来源：{{item.source}}</text>
   </view>
 </view>
