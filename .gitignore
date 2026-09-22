@@ -1,0 +1,15 @@
+node_modules/
+.env
+.env.*
+dist/
+build/
+coverage/
+*.log
+*.local
+.idea/
+.vscode/settings.json
+miniprogram/project.private.config.json
+server/uploads/
+*.db
+*.sqlite
+Thumbs.db
