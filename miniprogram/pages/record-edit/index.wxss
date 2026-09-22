@@ -3,3 +3,15 @@
 .candidate { margin-top: 24rpx; border-top: 2rpx solid #cbd5e0; padding-top: 24rpx; }
 .error { color: #b83232; line-height: 1.8; }
 .description { box-sizing: border-box; width: 100%; height: 200rpx; }
+.recognition-head { display: flex; align-items: flex-start; justify-content: space-between; gap: 20rpx; }
+.provider { display: block; margin-top: 6rpx; font-size: 23rpx; }
+.service-status { flex-shrink: 0; padding: 7rpx 14rpx; border-radius: 999rpx; font-size: 22rpx; }
+.service-status.ready { color: #276749; background: #c6f6d5; }
+.service-status.not-ready { color: #975a16; background: #feebc8; }
+.service-status.checking { color: #4a5568; background: #edf2f7; }
+.recognition-help { margin-top: 18rpx; line-height: 1.65; }
+.voice-button { margin-top: 22rpx; }
+.recording-button { margin-top: 22rpx; color: #ffffff; background: #c53030; border-radius: 12rpx; }
+.recognition-preview { display: block; width: 100%; height: 300rpx; margin-top: 22rpx; border-radius: 14rpx; }
+.alternative-list { display: flex; flex-wrap: wrap; gap: 12rpx; }
+.alternative-tag { padding: 10rpx 16rpx; border: 1rpx solid #9ae6b4; border-radius: 999rpx; color: #276749; background: #f0fff4; font-size: 23rpx; }

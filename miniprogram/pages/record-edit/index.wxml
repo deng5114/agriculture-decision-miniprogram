@@ -9,14 +9,28 @@
       <view wx:if="{{readonly}}" class="muted">当前记录只读，可返回列表查看审核进度。</view>
     </view>
     <view wx:if="{{!readonly}}" class="card">
-      <text class="section-title">辅助录入 · 模拟演示</text>
-      <view class="muted">使用预设语音文字和图片样例，不采集麦克风或相册，也不进行真实识别。</view>
-      <button class="button-secondary" disabled="{{busy}}" data-kind="voice" bindtap="chooseSample">语音识别模拟</button>
-      <button class="button-secondary" disabled="{{busy}}" data-kind="image" bindtap="chooseSample">图片识别模拟</button>
+      <view class="recognition-head">
+        <view>
+          <text class="section-title">AI 辅助录入 · 真实识别</text>
+          <text class="muted provider">{{recognitionProvider || '识别服务状态读取中'}}</text>
+        </view>
+        <text class="service-status {{recognitionStatusClass}}">{{recognitionStatusText}}</text>
+      </view>
+      <view class="muted recognition-help">录音会上传到后端进行短语音识别；植物照片会上传到后端进行植物识别。识别结果不会直接覆盖表单，必须由你确认。</view>
+      <button wx:if="{{!recording}}" class="button-secondary voice-button" disabled="{{busy || !recognitionConfigured}}" bindtap="startVoiceRecognition">开始真实语音识别</button>
+      <button wx:else class="recording-button" bindtap="stopVoiceRecognition">停止录音（{{recordingSeconds}} 秒）</button>
+      <button class="button-secondary" disabled="{{busy || recording || !recognitionConfigured}}" bindtap="chooseImage">拍照或选择植物图片</button>
+      <image wx:if="{{imagePreview}}" class="recognition-preview" src="{{imagePreview}}" mode="aspectFill"></image>
       <view wx:if="{{recognitionMessage}}" class="notice">{{recognitionMessage}}</view>
       <view wx:if="{{candidate}}" class="candidate">
         <text class="section-title">候选结果，请确认</text>
         <view>{{candidate.description}}</view>
+        <view wx:if="{{recognitionAlternatives.length}}" class="alternatives">
+          <text class="field-label">其他识别候选</text>
+          <view class="alternative-list">
+            <text wx:for="{{recognitionAlternatives}}" wx:key="name" class="alternative-tag" data-name="{{item.name}}" bindtap="selectAlternative">{{item.name}} {{item.score}}%</text>
+          </view>
+        </view>
         <view wx:if="{{candidate.areaMu}}" class="notice">识别面积 {{candidate.areaMu}} 亩仅供核对；保存时使用所选地块的面积，不会修改地块。</view>
         <text class="field-label">候选作物（可修改）</text>
         <input class="input" value="{{candidate.cropName}}" maxlength="50" data-field="cropName" bindinput="candidateInput" />
@@ -44,8 +58,8 @@
       <text class="field-label">问题描述（选填）</text>
       <textarea class="input description" disabled="{{readonly || busy}}" value="{{problemDescription}}" maxlength="500" data-field="problemDescription" bindinput="input" placeholder="例如：缺水、地力下降" />
       <block wx:if="{{!readonly}}">
-        <button class="button-secondary" disabled="{{busy || !!candidate}}" loading="{{busy}}" data-action="save" bindtap="save">保存草稿</button>
-        <button class="button-primary" disabled="{{busy || !!candidate}}" data-action="submit" bindtap="save">保存并提交审核</button>
+        <button class="button-secondary" disabled="{{busy || recording || !!candidate}}" loading="{{busy}}" data-action="save" bindtap="save">保存草稿</button>
+        <button class="button-primary" disabled="{{busy || recording || !!candidate}}" data-action="submit" bindtap="save">保存并提交审核</button>
       </block>
       <button class="button-secondary" disabled="{{busy}}" bindtap="viewRecords">查看我的种植记录</button>
     </view>

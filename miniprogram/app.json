@@ -17,6 +17,11 @@
     "navigationBarTextStyle": "white",
     "backgroundColor": "#f5f7f5"
   },
+  "permission": {
+    "scope.record": {
+      "desc": "用于将种植信息语音转换为待确认的表单候选内容"
+    }
+  },
   "style": "v2",
   "sitemapLocation": "sitemap.json"
 }

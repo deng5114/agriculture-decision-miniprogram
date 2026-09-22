@@ -1,17 +1,36 @@
-const { request } = require('../../utils/request');
+const { request, uploadFile } = require('../../utils/request');
 const statusLabels = { draft: '草稿', pending: '待审核', approved: '已通过', rejected: '已驳回' };
 Page({
   data: {
     id: '', plots: [], plotIndex: 0, loading: true, error: '', busy: false,
     readonly: false, statusLabel: '新记录', reviewComment: '',
     cropName: '', plantingDate: '', budget: '0', experienceLevel: '初级', problemDescription: '',
-    experiences: ['初级', '中等', '熟练'], errors: {}, candidate: null, recognitionMessage: ''
+    experiences: ['初级', '中等', '熟练'], errors: {}, candidate: null, recognitionMessage: '',
+    recognitionConfigured: null, recognitionProvider: '', recognitionStatusText: '检测中', recognitionStatusClass: 'checking',
+    recording: false, recordingSeconds: 0,
+    imagePreview: '', recognitionAlternatives: []
   },
-  onLoad(options) { this.options = options; this.load(); },
+  onLoad(options) { this.options = options; this.setupRecorder(); this.load(); },
   async load() {
     this.setData({ loading: true, error: '' });
     try {
       const plots = await request({ url: '/api/plots' });
+      try {
+        const status = await request({ url: '/api/recognition/status' });
+        this.setData({
+          recognitionConfigured: status.configured,
+          recognitionProvider: status.provider,
+          recognitionStatusText: status.configured ? '已配置' : '待配置',
+          recognitionStatusClass: status.configured ? 'ready' : 'not-ready'
+        });
+      } catch (error) {
+        this.setData({
+          recognitionConfigured: false,
+          recognitionProvider: '',
+          recognitionStatusText: '不可用',
+          recognitionStatusClass: 'not-ready'
+        });
+      }
       const id = this.options.id || '';
       const record = id ? await request({ url: `/api/plant-records/${id}` }) : null;
       const plotId = record ? record.plot_id : this.options.plotId;
@@ -32,26 +51,110 @@ Page({
   chooseExperience(e) { this.setData({ experienceLevel: this.data.experiences[Number(e.detail.value)] }); },
   addPlot() { wx.navigateTo({ url: '/pages/plot/index' }); },
   onShow() { if (this.options && !this.data.loading && !this.data.plots.length) this.load(); },
-  chooseSample(e) {
-    if (this.data.busy || this.data.readonly) return;
-    const kind = e.currentTarget.dataset.kind;
-    const names = kind === 'voice' ? ['种两亩番茄，地块缺水', '种三亩玉米', '噪声 / 无声（模拟失败）'] : ['番茄图片样例', '玉米图片样例', '模糊图片（模拟失败）', '无关图片（模拟失败）'];
-    const samples = kind === 'voice' ? ['tomato', 'corn', 'noise'] : ['tomato', 'corn', 'blurred', 'unrelated'];
-    wx.showActionSheet({ itemList: names, success: result => this.recognize(kind, samples[result.tapIndex]) });
+  onUnload() {
+    this.unloading = true;
+    clearInterval(this.recordingTimer);
+    if (this.data.recording && this.recorder) this.recorder.stop();
   },
-  async recognize(kind, sample) {
+  setupRecorder() {
+    if (!wx.getRecorderManager) return;
+    this.recorder = wx.getRecorderManager();
+    this.recorder.onStart(() => {
+      this.setData({ recording: true, recordingSeconds: 0, recognitionMessage: '正在录音，请清楚说出作物、面积和问题…' });
+      this.recordingTimer = setInterval(() => this.setData({ recordingSeconds: this.data.recordingSeconds + 1 }), 1000);
+    });
+    this.recorder.onStop((result) => {
+      clearInterval(this.recordingTimer);
+      this.setData({ recording: false });
+      if (this.unloading) return;
+      if (result.duration < 800) {
+        this.setData({ recognitionMessage: '录音时间太短，请至少说 1 秒。' });
+        return;
+      }
+      this.uploadRecognition('voice', result.tempFilePath, { format: 'm4a' });
+    });
+    this.recorder.onError((error) => {
+      clearInterval(this.recordingTimer);
+      console.error(error);
+      this.setData({ recording: false, recognitionMessage: '录音失败，请检查麦克风权限后重试。' });
+    });
+  },
+  ensureRecognitionReady() {
+    if (this.data.recognitionConfigured !== true) {
+      wx.showToast({ title: this.data.recognitionConfigured === false ? '后端尚未配置真实识别密钥' : '正在检查识别服务', icon: 'none' });
+      return false;
+    }
+    return true;
+  },
+  async startVoiceRecognition() {
     if (this.data.busy || this.data.readonly) return;
-    this.setData({ busy: true, candidate: null, recognitionMessage: '' });
+    if (!this.ensureRecognitionReady()) return;
+    if (!this.recorder) {
+      this.setData({ recognitionMessage: '当前微信基础库不支持录音，请升级微信后重试。' });
+      return;
+    }
     try {
-      const result = await request({ url: `/api/recognition/${kind}`, method: 'POST', data: { sample } });
-      if (!result.recognized) { this.setData({ recognitionMessage: result.message }); return; }
-      this.setData({ candidate: {
+      await new Promise((resolve, reject) => wx.authorize({ scope: 'scope.record', success: resolve, fail: reject }));
+      this.recorder.start({ duration: 20_000, sampleRate: 16_000, numberOfChannels: 1, encodeBitRate: 48_000, format: 'aac' });
+    } catch (error) {
+      this.setData({ recognitionMessage: '需要麦克风权限。请在右上角设置中允许录音后重试。' });
+    }
+  },
+  stopVoiceRecognition() {
+    if (this.data.recording && this.recorder) this.recorder.stop();
+  },
+  chooseImage() {
+    if (this.data.busy || this.data.readonly || !this.ensureRecognitionReady()) return;
+    wx.chooseMedia({
+      count: 1,
+      mediaType: ['image'],
+      sourceType: ['camera', 'album'],
+      sizeType: ['compressed'],
+      success: (result) => {
+        const file = result.tempFiles && result.tempFiles[0];
+        if (!file) return;
+        if (file.size > 3 * 1024 * 1024) {
+          wx.showToast({ title: '图片不能超过 3MB', icon: 'none' });
+          return;
+        }
+        this.setData({ imagePreview: file.tempFilePath });
+        this.uploadRecognition('image', file.tempFilePath);
+      }
+    });
+  },
+  async uploadRecognition(kind, filePath, formData = {}) {
+    if (this.data.busy || this.data.readonly) return;
+    this.setData({ busy: true, candidate: null, recognitionAlternatives: [], recognitionMessage: '正在调用真实识别服务…' });
+    try {
+      const result = await uploadFile({ url: `/api/recognition/${kind}`, filePath, formData });
+      this.applyRecognitionResult(result);
+    } catch (error) {
+      this.setData({ recognitionMessage: (error && error.message) || '真实识别失败，请重试或手动填写，原表单未改变。' });
+    } finally {
+      this.setData({ busy: false });
+    }
+  },
+  applyRecognitionResult(result) {
+    if (!result.recognized) {
+      this.setData({ recognitionMessage: result.message || '未获得可靠识别结果，请重试或手动填写。' });
+      return;
+    }
+    const fields = result.fields || {};
+    this.setData({
+      recognitionMessage: `${result.provider || '识别服务'}已返回结果，请人工核对。`,
+      recognitionAlternatives: result.alternatives || [],
+      candidate: {
         description: result.transcript || result.description,
-        cropName: result.fields.cropName || '', areaMu: result.fields.areaMu || '',
-        problemDescription: result.fields.problemDescription || '', hasProblem: Object.prototype.hasOwnProperty.call(result.fields, 'problemDescription')
-      } });
-    } catch (error) { this.setData({ recognitionMessage: '模拟服务不可用，请重试或手动填写，原表单未改变。' }); }
-    finally { this.setData({ busy: false }); }
+        cropName: fields.cropName || '',
+        areaMu: fields.areaMu || '',
+        problemDescription: fields.problemDescription || '',
+        hasProblem: Object.prototype.hasOwnProperty.call(fields, 'problemDescription')
+      }
+    });
+  },
+  selectAlternative(e) {
+    if (!this.data.candidate) return;
+    this.setData({ 'candidate.cropName': e.currentTarget.dataset.name });
   },
   candidateInput(e) { this.setData({ ['candidate.' + e.currentTarget.dataset.field]: e.detail.value }); },
   confirmCandidate() {
@@ -64,7 +167,7 @@ Page({
   },
   cancelCandidate() { this.setData({ candidate: null, recognitionMessage: '已取消，可继续手动填写。' }); },
   async save(e) {
-    if (this.data.busy || this.data.readonly) return;
+    if (this.data.busy || this.data.recording || this.data.readonly) return;
     if (this.data.candidate) { wx.showToast({ title: '请先确认或取消候选结果', icon: 'none' }); return; }
     const d = this.data;
     const errors = {};

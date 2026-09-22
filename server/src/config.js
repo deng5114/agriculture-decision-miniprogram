@@ -11,5 +11,11 @@ module.exports = {
     user: process.env.DB_USER || 'root',
     password: process.env.DB_PASSWORD || '',
     database: process.env.DB_NAME || 'agriculture_decision'
+  },
+  baiduAi: {
+    apiKey: process.env.BAIDU_AI_API_KEY || '',
+    secretKey: process.env.BAIDU_AI_SECRET_KEY || '',
+    asrDevPid: Number(process.env.BAIDU_ASR_DEV_PID || 1537),
+    minimumConfidence: Number(process.env.RECOGNITION_MIN_CONFIDENCE || 0.5)
   }
 };
