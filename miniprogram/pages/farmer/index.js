@@ -17,6 +17,12 @@ Page({
   addPlot() {
     wx.navigateTo({ url: '/pages/plot/index' });
   },
+  records() {
+    wx.navigateTo({ url: '/pages/records/index' });
+  },
+  addRecord(event) {
+    wx.navigateTo({ url: `/pages/record-edit/index?plotId=${event.currentTarget.dataset.id}` });
+  },
   market() {
     wx.navigateTo({ url: '/pages/market/index' });
   },

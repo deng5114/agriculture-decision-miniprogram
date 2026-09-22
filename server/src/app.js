@@ -33,6 +33,7 @@ app.use('/api/disaster-alerts', disasterRoutes);
 app.use('/api/reviews', reviewRoutes);
 app.use('/api/market-data', marketRoutes);
 app.use('/api/statistics', statisticsRoutes);
+app.use('/api/recognition', require('./routes/recognition'));
 
 app.use((req, res) => {
   res.status(404).json({ code: 404, message: '接口不存在', data: null });

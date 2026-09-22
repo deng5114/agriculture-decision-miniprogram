@@ -15,7 +15,7 @@
     </view>
     <text class="result-line">土壤适配：{{item.dimensions.soil}} · 气候适配：{{item.dimensions.climate}}</text>
     <text class="result-line">市场稳定：{{item.dimensions.market}} · 成本适配：{{item.dimensions.cost}}</text>
-    <text class="reason">推荐理由：{{item.reasons.join('；')}}</text>
-    <text wx:if="{{item.risks.length}}" class="risk">风险提示：{{item.risks.join('；')}}</text>
+    <text class="reason">推荐理由：{{item.reasonText}}</text>
+    <text wx:if="{{item.risks.length}}" class="risk">风险提示：{{item.riskText}}</text>
   </view>
 </view>

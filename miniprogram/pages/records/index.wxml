@@ -1,0 +1,22 @@
+<view class="page">
+  <view class="card">
+    <text class="title">我的种植记录</text>
+    <text class="muted">保存草稿，确认信息后提交给农技人员。</text>
+    <button class="button-primary" bindtap="add">新增种植记录</button>
+    <picker range="{{filters}}" value="{{filter}}" bindchange="chooseFilter"><view class="input">状态：{{filters[filter]}} ▾</view></picker>
+  </view>
+  <view wx:if="{{loading}}" class="card">正在读取…</view>
+  <view wx:elif="{{error}}" class="card">{{error}}<button bindtap="loadRecords">重试</button></view>
+  <view wx:elif="{{!visible.length}}" class="card">当前状态下暂无记录。</view>
+  <block wx:else>
+    <view wx:for="{{visible}}" wx:key="id" class="card">
+      <text class="title">{{item.crop_name}}</text>
+      <view>{{item.plot_name}} · {{item.region}}</view>
+      <view>状态：{{item.statusLabel}}</view>
+      <view>预算：{{item.budget}} 元</view>
+      <view wx:if="{{item.review_comment}}">最近审核意见：{{item.review_comment}}</view>
+      <button class="button-secondary" data-id="{{item.id}}" bindtap="open">{{item.editable ? '查看并修改' : '查看详情'}}</button>
+      <button wx:if="{{item.editable}}" class="button-primary" disabled="{{!!submitting}}" loading="{{submitting === item.id}}" data-id="{{item.id}}" bindtap="submit">提交审核</button>
+    </view>
+  </block>
+</view>

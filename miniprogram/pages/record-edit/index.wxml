@@ -1,0 +1,53 @@
+<view class="page">
+  <view wx:if="{{loading}}" class="card">正在读取…</view>
+  <view wx:elif="{{error}}" class="card">{{error}}<button bindtap="load">重试</button></view>
+  <block wx:else>
+    <view class="card">
+      <text class="title">种植记录</text>
+      <view>状态：{{statusLabel}}</view>
+      <view wx:if="{{reviewComment}}" class="notice">最近审核意见：{{reviewComment}}</view>
+      <view wx:if="{{readonly}}" class="muted">当前记录只读，可返回列表查看审核进度。</view>
+    </view>
+    <view wx:if="{{!readonly}}" class="card">
+      <text class="section-title">辅助录入 · 模拟演示</text>
+      <view class="muted">使用预设语音文字和图片样例，不采集麦克风或相册，也不进行真实识别。</view>
+      <button class="button-secondary" disabled="{{busy}}" data-kind="voice" bindtap="chooseSample">语音识别模拟</button>
+      <button class="button-secondary" disabled="{{busy}}" data-kind="image" bindtap="chooseSample">图片识别模拟</button>
+      <view wx:if="{{recognitionMessage}}" class="notice">{{recognitionMessage}}</view>
+      <view wx:if="{{candidate}}" class="candidate">
+        <text class="section-title">候选结果，请确认</text>
+        <view>{{candidate.description}}</view>
+        <view wx:if="{{candidate.areaMu}}" class="notice">识别面积 {{candidate.areaMu}} 亩仅供核对；保存时使用所选地块的面积，不会修改地块。</view>
+        <text class="field-label">候选作物（可修改）</text>
+        <input class="input" value="{{candidate.cropName}}" maxlength="50" data-field="cropName" bindinput="candidateInput" />
+        <block wx:if="{{candidate.hasProblem}}"><text class="field-label">候选问题（可修改）</text><input class="input" value="{{candidate.problemDescription}}" maxlength="500" data-field="problemDescription" bindinput="candidateInput" /></block>
+        <button class="button-primary" bindtap="confirmCandidate">确认并填入表单</button>
+        <button bindtap="cancelCandidate">取消，手动填写</button>
+      </view>
+    </view>
+    <view class="card">
+      <text class="field-label">地块</text>
+      <picker range="{{plots}}" range-key="name" value="{{plotIndex}}" disabled="{{readonly || !!id || busy}}" bindchange="choosePlot"><view class="input">{{plots.length ? plots[plotIndex].name : '请先新增地块'}} ▾</view></picker>
+      <view wx:if="{{plots.length}}" class="muted">面积 {{plots[plotIndex].area_mu}} 亩 · {{plots[plotIndex].soil_type}}</view>
+      <view class="error">{{errors.plot}}</view>
+      <button wx:if="{{!plots.length}}" bindtap="addPlot">新增地块</button>
+      <text class="field-label">作物名称 *</text>
+      <input class="input" disabled="{{readonly || busy}}" value="{{cropName}}" maxlength="50" data-field="cropName" bindinput="input" placeholder="例如：番茄" />
+      <view class="error">{{errors.crop}}</view>
+      <text class="field-label">种植日期（选填）</text>
+      <picker mode="date" value="{{plantingDate}}" disabled="{{readonly || busy}}" data-field="plantingDate" bindchange="input"><view class="input">{{plantingDate || '选择日期'}} ▾</view></picker>
+      <text class="field-label">预算（元）*</text>
+      <input class="input" disabled="{{readonly || busy}}" value="{{budget}}" type="digit" data-field="budget" bindinput="input" />
+      <view class="error">{{errors.budget}}</view>
+      <text class="field-label">种植经验</text>
+      <picker range="{{experiences}}" disabled="{{readonly || busy}}" bindchange="chooseExperience"><view class="input">{{experienceLevel}} ▾</view></picker>
+      <text class="field-label">问题描述（选填）</text>
+      <textarea class="input description" disabled="{{readonly || busy}}" value="{{problemDescription}}" maxlength="500" data-field="problemDescription" bindinput="input" placeholder="例如：缺水、地力下降" />
+      <block wx:if="{{!readonly}}">
+        <button class="button-secondary" disabled="{{busy || !!candidate}}" loading="{{busy}}" data-action="save" bindtap="save">保存草稿</button>
+        <button class="button-primary" disabled="{{busy || !!candidate}}" data-action="submit" bindtap="save">保存并提交审核</button>
+      </block>
+      <button class="button-secondary" disabled="{{busy}}" bindtap="viewRecords">查看我的种植记录</button>
+    </view>
+  </block>
+</view>

@@ -7,7 +7,9 @@
     "pages/disaster/index",
     "pages/market/index",
     "pages/review/index",
-    "pages/admin/index"
+    "pages/admin/index",
+    "pages/records/index",
+    "pages/record-edit/index"
   ],
   "window": {
     "navigationBarTitleText": "农业作物智能决策",

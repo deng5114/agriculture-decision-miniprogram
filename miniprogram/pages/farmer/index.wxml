@@ -5,6 +5,7 @@
   </view>
 
   <button class="button-primary" bindtap="addPlot">新增地块</button>
+  <button class="button-secondary" bindtap="records">我的种植记录</button>
   <button class="button-secondary" bindtap="market">市场行情</button>
 
   <view wx:if="{{plots.length === 0}}" class="card empty-card">
@@ -15,6 +16,7 @@
     <text class="plot-name">{{item.name}}</text>
     <text class="plot-info">面积：{{item.area_mu}} 亩</text>
     <text class="plot-info">土壤：{{item.soil_type}} · 区域：{{item.region}}</text>
+    <button class="button-primary" data-id="{{item.id}}" bindtap="addRecord">填写种植记录</button>
     <button class="button-secondary" data-id="{{item.id}}" bindtap="recommend">作物推荐</button>
     <button class="button-secondary" data-id="{{item.id}}" bindtap="disaster">灾害预警</button>
   </view>

@@ -20,7 +20,7 @@ Page({
           experienceLevel: this.data.experienceLevel
         }
       });
-      this.setData({ results: result.top3 || [] });
+      this.setData({ results: (result.top3 || []).map(item => ({ ...item, reasonText: item.reasons.join('；'), riskText: item.risks.join('；') })) });
     } catch (error) {
       console.error(error);
     }
