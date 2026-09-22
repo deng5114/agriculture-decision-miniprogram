@@ -1,0 +1,19 @@
+<view class="page">
+  <view class="card welcome-card">
+    <text class="title">农技审核</text>
+    <text class="muted">审核通过的数据才会公开展示和参与统计</text>
+  </view>
+
+  <view wx:if="{{records.length === 0}}" class="card">
+    <text class="muted">当前没有待审核记录</text>
+  </view>
+
+  <view wx:for="{{records}}" wx:key="id" class="card">
+    <text class="record-title">{{item.crop_name}} · {{item.plot_name}}</text>
+    <text class="record-line">农户：{{item.farmer_name}} · 区域：{{item.region}}</text>
+    <text class="record-line">预算：{{item.budget}} 元</text>
+    <text class="record-line">问题：{{item.problem_description || '无'}}</text>
+    <button class="button-primary" data-id="{{item.id}}" bindtap="approve">审核通过</button>
+    <button class="button-secondary" data-id="{{item.id}}" bindtap="reject">驳回并填写原因</button>
+  </view>
+</view>

@@ -1,0 +1,46 @@
+.year-row {
+  display: flex;
+  align-items: center;
+  margin-top: 18rpx;
+}
+
+.year-input {
+  flex: 1;
+}
+
+.year-separator {
+  padding: 0 16rpx;
+  color: #718096;
+}
+
+.note {
+  display: block;
+  margin-top: 10rpx;
+}
+
+.market-head {
+  display: flex;
+  justify-content: space-between;
+}
+
+.crop-name {
+  font-size: 34rpx;
+  font-weight: 700;
+}
+
+.price {
+  color: #2f855a;
+  font-size: 34rpx;
+  font-weight: 700;
+}
+
+.market-line,
+.market-source {
+  display: block;
+  margin-top: 12rpx;
+}
+
+.market-source {
+  color: #718096;
+  font-size: 24rpx;
+}

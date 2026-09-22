@@ -23,7 +23,12 @@ Page({
       app.globalData.demoHeaders = result.demoHeaders;
       wx.setStorageSync('demoHeaders', result.demoHeaders);
       wx.setStorageSync('currentUser', result.user);
-      wx.redirectTo({ url: '/pages/farmer/index' });
+      const target = this.data.role === 'agronomist'
+        ? '/pages/review/index'
+        : this.data.role === 'admin'
+          ? '/pages/admin/index'
+          : '/pages/farmer/index';
+      wx.redirectTo({ url: target });
     } catch (error) {
       console.error(error);
     }

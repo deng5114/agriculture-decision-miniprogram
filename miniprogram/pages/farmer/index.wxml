@@ -5,6 +5,7 @@
   </view>
 
   <button class="button-primary" bindtap="addPlot">新增地块</button>
+  <button class="button-secondary" bindtap="market">市场行情</button>
 
   <view wx:if="{{plots.length === 0}}" class="card empty-card">
     <text class="muted">还没有地块，请先新增一块地。</text>

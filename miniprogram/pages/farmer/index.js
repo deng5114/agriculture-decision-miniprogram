@@ -17,6 +17,9 @@ Page({
   addPlot() {
     wx.navigateTo({ url: '/pages/plot/index' });
   },
+  market() {
+    wx.navigateTo({ url: '/pages/market/index' });
+  },
   recommend(event) {
     wx.navigateTo({ url: `/pages/recommendation/index?plotId=${event.currentTarget.dataset.id}` });
   },

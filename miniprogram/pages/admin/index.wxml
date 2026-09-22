@@ -1,0 +1,28 @@
+<view class="page">
+  <view class="card welcome-card">
+    <text class="title">区域统计</text>
+    <text class="muted">统计范围：仅包含审核通过的种植记录</text>
+  </view>
+
+  <view wx:if="{{stats}}" class="card">
+    <text class="stat-line">通过记录：{{stats.summary.record_count}} 条</text>
+    <text class="stat-line">种植面积：{{stats.summary.total_area_mu}} 亩</text>
+    <text class="stat-line">预算合计：{{stats.summary.total_budget}} 元</text>
+  </view>
+
+  <view class="card">
+    <text class="section-title">按作物统计</text>
+    <view wx:for="{{stats.byCrop}}" wx:key="crop_name" class="stat-row">
+      <text>{{item.crop_name}}</text>
+      <text>{{item.record_count}} 条 / {{item.total_area_mu}} 亩</text>
+    </view>
+  </view>
+
+  <view class="card">
+    <text class="section-title">按区域统计</text>
+    <view wx:for="{{stats.byRegion}}" wx:key="region" class="stat-row">
+      <text>{{item.region}}</text>
+      <text>{{item.record_count}} 条 / {{item.total_area_mu}} 亩</text>
+    </view>
+  </view>
+</view>

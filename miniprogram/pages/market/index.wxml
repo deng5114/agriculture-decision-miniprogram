@@ -1,0 +1,34 @@
+<view class="page">
+  <view class="card">
+    <text class="title">历史市场行情</text>
+    <text class="field-label">作物</text>
+    <input class="input" data-field="cropName" value="{{cropName}}" bindinput="input" />
+    <text class="field-label">区域</text>
+    <input class="input" data-field="region" value="{{region}}" bindinput="input" />
+    <view class="year-row">
+      <input class="input year-input" type="number" data-field="startYear" value="{{startYear}}" bindinput="input" />
+      <text class="year-separator">至</text>
+      <input class="input year-input" type="number" data-field="endYear" value="{{endYear}}" bindinput="input" />
+    </view>
+    <button class="button-primary" bindtap="loadData">查询行情</button>
+  </view>
+
+  <view class="card">
+    <text class="muted">{{source}}</text>
+    <text class="muted note">{{note}}</text>
+  </view>
+
+  <view wx:if="{{rows.length === 0}}" class="card">
+    <text class="muted">暂无数据</text>
+  </view>
+
+  <view wx:for="{{rows}}" wx:key="id" class="card market-card">
+    <view class="market-head">
+      <text class="crop-name">{{item.data_year}} 年</text>
+      <text class="price">￥{{item.average_price}}</text>
+    </view>
+    <text class="market-line">产量：{{item.output_ton}} 吨</text>
+    <text class="market-line">种植面积：{{item.planting_area_mu}} 亩</text>
+    <text class="market-source">来源：{{item.source}}</text>
+  </view>
+</view>

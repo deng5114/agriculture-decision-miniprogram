@@ -1,0 +1,27 @@
+.welcome-card {
+  background: #f0fff4;
+}
+
+.stat-line,
+.section-title,
+.stat-row {
+  display: block;
+  line-height: 1.8;
+}
+
+.stat-line {
+  font-size: 32rpx;
+}
+
+.section-title {
+  font-size: 30rpx;
+  font-weight: 700;
+  margin-bottom: 12rpx;
+}
+
+.stat-row {
+  display: flex;
+  justify-content: space-between;
+  border-top: 1rpx solid #edf2f7;
+  padding: 16rpx 0;
+}

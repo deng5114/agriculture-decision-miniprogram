@@ -1,0 +1,16 @@
+.welcome-card {
+  background: #f0fff4;
+}
+
+.record-title {
+  display: block;
+  font-size: 34rpx;
+  font-weight: 700;
+  margin-bottom: 12rpx;
+}
+
+.record-line {
+  display: block;
+  color: #4a5568;
+  line-height: 1.7;
+}

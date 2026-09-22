@@ -4,7 +4,10 @@
     "pages/farmer/index",
     "pages/plot/index",
     "pages/recommendation/index",
-    "pages/disaster/index"
+    "pages/disaster/index",
+    "pages/market/index",
+    "pages/review/index",
+    "pages/admin/index"
   ],
   "window": {
     "navigationBarTitleText": "农业作物智能决策",
