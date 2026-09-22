@@ -29,6 +29,8 @@ npm run dev
 ```text
 GET  http://localhost:3000/api/health
 POST http://localhost:3000/api/auth/login
+POST http://localhost:3000/api/plots
+GET  http://localhost:3000/api/plant-records
 ```
 
 当前登录接口是课程演示用登录，返回的 `demoHeaders` 可用于后续接口联调。正式接入微信时，再替换为微信登录校验流程。

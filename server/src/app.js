@@ -3,6 +3,8 @@ const cors = require('cors');
 const config = require('./config');
 const authRoutes = require('./routes/auth');
 const healthRoutes = require('./routes/health');
+const plotRoutes = require('./routes/plots');
+const recordRoutes = require('./routes/records');
 
 const app = express();
 
@@ -19,6 +21,8 @@ app.get('/', (req, res) => {
 
 app.use('/api/auth', authRoutes);
 app.use('/api/health', healthRoutes);
+app.use('/api/plots', plotRoutes);
+app.use('/api/plant-records', recordRoutes);
 
 app.use((req, res) => {
   res.status(404).json({ code: 404, message: '接口不存在', data: null });

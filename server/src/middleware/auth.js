@@ -9,7 +9,7 @@ function requireLogin(req, res, next) {
     });
   }
 
-  req.user = { id: Number(userId) };
+  req.user = { id: Number(userId), role: req.header('x-demo-role') };
   next();
 }
 
