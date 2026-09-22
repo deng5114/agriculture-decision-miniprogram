@@ -4,25 +4,101 @@
     <text class="muted">统计范围：仅包含审核通过的种植记录</text>
   </view>
 
-  <view wx:if="{{stats}}" class="card">
-    <text class="stat-line">通过记录：{{stats.summary.record_count}} 条</text>
-    <text class="stat-line">种植面积：{{stats.summary.total_area_mu}} 亩</text>
-    <text class="stat-line">预算合计：{{stats.summary.total_budget}} 元</text>
+  <view wx:if="{{loading && !stats}}" class="card loading-card">
+    <text class="muted">正在汇总统计数据…</text>
   </view>
 
-  <view class="card">
-    <text class="section-title">按作物统计</text>
-    <view wx:for="{{stats.byCrop}}" wx:key="crop_name" class="stat-row">
-      <text>{{item.crop_name}}</text>
-      <text>{{item.record_count}} 条 / {{item.total_area_mu}} 亩</text>
+  <block wx:if="{{stats}}">
+    <view class="summary-grid">
+      <view class="summary-card">
+        <text class="summary-value">{{stats.summary.record_count}}</text>
+        <text class="summary-label">通过记录（条）</text>
+      </view>
+      <view class="summary-card">
+        <text class="summary-value">{{stats.summary.unique_plot_count}}</text>
+        <text class="summary-label">涉及地块（块）</text>
+      </view>
+      <view class="summary-card">
+        <text class="summary-value">{{stats.summary.areaText}}</text>
+        <text class="summary-label">去重面积（亩）</text>
+      </view>
+      <view class="summary-card">
+        <text class="summary-value budget-value">￥{{stats.summary.budgetText}}</text>
+        <text class="summary-label">预算合计（元）</text>
+      </view>
     </view>
-  </view>
 
-  <view class="card">
-    <text class="section-title">按区域统计</text>
-    <view wx:for="{{stats.byRegion}}" wx:key="region" class="stat-row">
-      <text>{{item.region}}</text>
-      <text>{{item.record_count}} 条 / {{item.total_area_mu}} 亩</text>
+    <view class="card definition-card">
+      <text class="definition-title">面积统计口径</text>
+      <text class="definition-text">{{stats.areaDefinition}}</text>
+      <text class="definition-extra">同一地块若登记不同作物，会分别进入相应作物类别，因此作物分类面积不应直接相加作为总面积。</text>
     </view>
+
+    <view class="card chart-card">
+      <view class="chart-head">
+        <view>
+          <text class="section-title">作物分布图</text>
+          <text class="chart-note">最多展示数值最高的 8 项</text>
+        </view>
+        <view class="metric-tabs">
+          <text class="metric-tab {{chartMetric === 'area' ? 'active' : ''}}" data-metric="area" bindtap="selectMetric">面积</text>
+          <text class="metric-tab {{chartMetric === 'record' ? 'active' : ''}}" data-metric="record" bindtap="selectMetric">记录</text>
+        </view>
+      </view>
+      <view wx:for="{{stats.cropChart}}" wx:key="crop_name" class="bar-item">
+        <view class="bar-label-row">
+          <text class="bar-label">{{item.label}}</text>
+          <text class="bar-value">{{item.chartValueText}}</text>
+        </view>
+        <view class="bar-track"><view class="bar-fill crop-bar" style="width: {{item.chartPercent}}%;"></view></view>
+      </view>
+      <text wx:if="{{stats.cropChart.length === 0}}" class="muted empty-text">暂无作物统计数据</text>
+    </view>
+
+    <view class="card chart-card">
+      <view class="chart-head">
+        <view>
+          <text class="section-title">区域分布图</text>
+          <text class="chart-note">面积已按区域内唯一地块去重</text>
+        </view>
+      </view>
+      <view wx:for="{{stats.regionChart}}" wx:key="region" class="bar-item">
+        <view class="bar-label-row">
+          <text class="bar-label">{{item.label}}</text>
+          <text class="bar-value">{{item.chartValueText}}</text>
+        </view>
+        <view class="bar-track"><view class="bar-fill region-bar" style="width: {{item.chartPercent}}%;"></view></view>
+      </view>
+      <text wx:if="{{stats.regionChart.length === 0}}" class="muted empty-text">暂无区域统计数据</text>
+    </view>
+
+    <view class="card">
+      <text class="section-title">按作物统计明细</text>
+      <view wx:for="{{stats.byCrop}}" wx:key="crop_name" class="stat-row">
+        <view>
+          <text class="row-name">{{item.crop_name}}</text>
+          <text class="row-detail">{{item.unique_plot_count}} 个地块</text>
+        </view>
+        <text class="row-value">{{item.record_count}} 条 / {{item.areaText}} 亩</text>
+      </view>
+      <text wx:if="{{stats.byCrop.length === 0}}" class="muted empty-text">暂无数据</text>
+    </view>
+
+    <view class="card">
+      <text class="section-title">按区域统计明细</text>
+      <view wx:for="{{stats.byRegion}}" wx:key="region" class="stat-row">
+        <view>
+          <text class="row-name">{{item.region}}</text>
+          <text class="row-detail">{{item.unique_plot_count}} 个地块</text>
+        </view>
+        <text class="row-value">{{item.record_count}} 条 / {{item.areaText}} 亩</text>
+      </view>
+      <text wx:if="{{stats.byRegion.length === 0}}" class="muted empty-text">暂无数据</text>
+    </view>
+  </block>
+
+  <view wx:if="{{loaded && !loading && !stats}}" class="card loading-card">
+    <text class="muted">统计数据加载失败，请稍后重试</text>
+    <button class="button-secondary" bindtap="loadStats">重新加载</button>
   </view>
 </view>
